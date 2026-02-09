@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Kanit } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const kanit = Kanit({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ["thai", "latin"],
+  variable: '--font-kanit'
+});
 
 export const metadata: Metadata = {
-  title: "Wildfire Watch TH - Real-time Risk Prediction",
-  description: "Advanced wildfire monitoring system for Thailand using NASA FIRMS satellite data.",
-  keywords: ["Wildfire", "Thailand", "NASA FIRMS", "Real-time Map", "Risk Prediction", "Fire Hotspots"],
+  title: "ระบบพยากรณ์ความเสี่ยงไฟป่า (ประเทศไทย)",
+  description: "แดชบอร์ดเฝ้าระวังไฟป่าและจุดความร้อนแบบเรียลไทม์ในประเทศไทย จากข้อมูลดาวเทียม NASA FIRMS",
+  keywords: ["ไฟป่า", "ประเทศไทย", "NASA FIRMS", "แผนที่เรียลไทม์", "พยากรณ์ความเสี่ยง", "จุดความร้อน", "VIIRS"],
 };
 
 export default function RootLayout({
@@ -16,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} antialiased bg-black text-white`}>
+    <html lang="th" className="dark">
+      <body className={`${kanit.variable} antialiased bg-black text-white`}>
         {children}
       </body>
     </html>

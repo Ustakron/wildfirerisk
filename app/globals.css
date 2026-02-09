@@ -2,23 +2,25 @@
 
 :root {
   --background: #000000;
-  --foreground: #ededed;
+  --foreground: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-kanit: var(--font-kanit);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-kanit), sans-serif;
 }
 
 /* Custom Leaflet Styles */
 .leaflet-container {
-  background-color: #000; /* Dark background for loading logic */
+  background-color: #000;
+  /* Dark background for loading logic */
   width: 100%;
   height: 100%;
 }
@@ -35,7 +37,8 @@ body {
 
 .glass-popup .leaflet-popup-tip {
   background-color: rgba(0, 0, 0, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Optional border for tip */
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  /* Optional border for tip */
   border-top: none !important;
   border-left: none !important;
 }
@@ -45,5 +48,41 @@ body {
 }
 
 .glass-popup .leaflet-popup-close-button:hover {
-  color: #ef4444 !important; /* red-500 */
+  color: #ef4444 !important;
+  /* red-500 */
+}
+
+.banner-in {
+  animation: banner-in 0.35s ease-out;
+}
+
+.hotspot-pulse {
+  animation: hotspot-pulse 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6));
+}
+
+.hotspot-pulse--strong {
+  animation-duration: 1.2s;
+  filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.85));
+}
+
+@keyframes banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hotspot-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }
