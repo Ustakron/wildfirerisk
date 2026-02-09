@@ -16,7 +16,12 @@ app.add_middleware(
 )
 
 # NASA FIRMS Public CSV URL for South East Asia (VIIRS SNPP 24h)
-NASA_URL = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_NPP_VIIRS_C2_SouthEast_Asia_24h.csv"
+# Filename pattern changed: "SUOMI_VIIRS_C2_*" (not "SUOMI_NPP_VIIRS_C2_*")
+NASA_URLS = [
+    "https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_SouthEast_Asia_24h.csv",
+    # Fallback to 7-day if 24h is unavailable
+    "https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_SouthEast_Asia_7d.csv",
+]
 NASA_HEADERS = {"User-Agent": "wildfirerisk-dashboard/1.0"}
 
 @app.get("/api/v1/hotspots")
@@ -24,9 +29,15 @@ async def get_hotspots():
     data_list = []
     try:
         # Use a timeout to prevent hanging
-        response = requests.get(NASA_URL, timeout=10, headers=NASA_HEADERS)
-        if response.status_code != 200:
-             return {"data": [], "error": f"Failed to fetch data: {response.status_code}"}
+        response = None
+        last_status = None
+        for url in NASA_URLS:
+            response = requests.get(url, timeout=10, headers=NASA_HEADERS)
+            last_status = response.status_code
+            if response.status_code == 200:
+                break
+        if response is None or response.status_code != 200:
+            return {"data": [], "error": f"Failed to fetch data: {last_status}"}
         
         content = response.content.decode('utf-8')
         csv_reader = csv.DictReader(io.StringIO(content))
