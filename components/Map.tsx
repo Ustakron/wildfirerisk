@@ -1,6 +1,7 @@
 'use client';
 
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { useEffect } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Flame } from 'lucide-react';
 
@@ -17,6 +18,13 @@ interface Hotspot {
 
 interface MapProps {
   hotspots: Hotspot[];
+  focus: MapFocus;
+}
+
+interface MapFocus {
+  center: [number, number];
+  zoom: number;
+  bounds?: [[number, number], [number, number]];
 }
 
 const formatConfidence = (value: string) => {
@@ -57,14 +65,33 @@ const formatAcqTime = (value?: string) => {
   return `${padded.slice(0, 2)}:${padded.slice(2)}`;
 };
 
-const Map = ({ hotspots }: MapProps) => {
+const MapViewController = ({ focus }: { focus: MapFocus }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (focus.bounds) {
+      map.flyToBounds(focus.bounds, {
+        padding: [40, 40],
+        maxZoom: 9,
+        duration: 1.1,
+      });
+      return;
+    }
+
+    map.flyTo(focus.center, focus.zoom, { duration: 1.1 });
+  }, [focus, map]);
+
+  return null;
+};
+
+const Map = ({ hotspots, focus }: MapProps) => {
   // Center on Thailand
-  const position: [number, number] = [13.7563, 100.5018];
+  const position = focus.center;
 
   return (
     <MapContainer
       center={position}
-      zoom={6}
+      zoom={focus.zoom}
       scrollWheelZoom={true}
       style={{ height: '100%', width: '100%', zIndex: 0 }}
       className="z-0"
@@ -73,6 +100,8 @@ const Map = ({ hotspots }: MapProps) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
       />
+
+      <MapViewController focus={focus} />
 
       {hotspots.map((spot) => {
         const brightness = Number.isFinite(spot.brightness) ? spot.brightness : 0;

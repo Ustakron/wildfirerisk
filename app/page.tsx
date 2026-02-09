@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { AlertTriangle, Flame, Info } from 'lucide-react';
+import { PROVINCES } from '@/data/provinces';
 
 const Map = dynamic(() => import('@/components/Map'), { ssr: false });
 
@@ -18,10 +19,15 @@ interface Hotspot {
 
 type ErrorState = 'empty' | 'fetch' | null;
 
+const COUNTRY_CENTER: [number, number] = [13.7563, 100.5018];
+const COUNTRY_ZOOM = 6;
+const PROVINCE_FALLBACK_ZOOM = 8;
+
 export default function Home() {
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ErrorState>(null);
+  const [selectedProvinceId, setSelectedProvinceId] = useState('all');
 
   useEffect(() => {
     const fetchHotspots = async () => {
@@ -71,11 +77,28 @@ export default function Home() {
           }
         : null;
 
+  const selectedProvince = useMemo(
+    () => PROVINCES.find((province) => province.id === selectedProvinceId) ?? null,
+    [selectedProvinceId]
+  );
+
+  const mapFocus = useMemo(() => {
+    if (!selectedProvince) {
+      return { center: COUNTRY_CENTER, zoom: COUNTRY_ZOOM };
+    }
+
+    return {
+      center: selectedProvince.center,
+      zoom: PROVINCE_FALLBACK_ZOOM,
+      bounds: selectedProvince.bounds,
+    };
+  }, [selectedProvince]);
+
   return (
     <main className="relative w-full h-screen bg-black overflow-hidden font-kanit">
       {/* Map Background */}
       <div className="absolute inset-0 z-0">
-        <Map hotspots={hotspots} />
+        <Map hotspots={hotspots} focus={mapFocus} />
       </div>
 
       {/* Cyberpunk UI Overlay */}
@@ -110,6 +133,34 @@ export default function Home() {
                 จุดความร้อน 24 ชม. ล่าสุด
               </span>
             </div>
+          </div>
+
+          {/* Province Selector */}
+          <div className="glass-panel p-4 rounded-2xl border border-white/10 backdrop-blur-xl bg-black/40 text-white shadow-2xl pointer-events-auto w-full md:w-72">
+            <label
+              htmlFor="province-select"
+              className="text-[10px] text-gray-400 uppercase tracking-widest font-bold"
+            >
+              เลือกจังหวัดเพื่อซูม
+            </label>
+            <div className="mt-2">
+              <select
+                id="province-select"
+                value={selectedProvinceId}
+                onChange={(event) => setSelectedProvinceId(event.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-black/60 text-sm text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500/60 focus:border-red-500/60"
+              >
+                <option value="all">ประเทศไทย (ทั้งหมด)</option>
+                {PROVINCES.map((province) => (
+                  <option key={province.id} value={province.id}>
+                    {province.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="text-[10px] text-gray-500 mt-2">
+              ระบบจะซูมเข้าหาศูนย์กลางจังหวัดที่เลือกโดยอัตโนมัติ
+            </p>
           </div>
         </header>
 
