@@ -27,14 +27,23 @@ export default function Home() {
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ErrorState>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [selectedProvinceId, setSelectedProvinceId] = useState('all');
 
   useEffect(() => {
     const fetchHotspots = async () => {
       try {
         const res = await fetch('/api/v1/hotspots');
+        // If the status is not ok, try to parse JSON for an error message, otherwise throw status text
         if (!res.ok) {
-          throw new Error(`API Error: ${res.status}`);
+          let errorMsg = `API Error: ${res.status}`;
+          try {
+            const errorData = await res.json();
+            if (errorData.error) errorMsg = errorData.error;
+          } catch {
+            // ignore JSON parse error
+          }
+          throw new Error(errorMsg);
         }
         const data = await res.json();
 
@@ -52,6 +61,7 @@ export default function Home() {
       } catch (err) {
         console.error(err);
         setError('fetch');
+        setErrorMessage(err instanceof Error ? err.message : 'Unknown error');
         setHotspots([]);
       } finally {
         setLoading(false);
@@ -67,14 +77,14 @@ export default function Home() {
   const errorContent =
     error === 'empty'
       ? {
-          title: 'ยังไม่พบจุดความร้อนในประเทศไทย',
-          message: 'ข้อมูล 24 ชั่วโมงล่าสุดจาก NASA FIRMS ยังไม่พบจุดความร้อนในพื้นที่ประเทศไทย',
-        }
+        title: 'ยังไม่พบจุดความร้อนในประเทศไทย',
+        message: 'ข้อมูล 24 ชั่วโมงล่าสุดจาก NASA FIRMS ยังไม่พบจุดความร้อนในพื้นที่ประเทศไทย',
+      }
       : error === 'fetch'
         ? {
-            title: 'เชื่อมต่อข้อมูลไม่สำเร็จ',
-            message: 'ระบบไม่สามารถดึงข้อมูลจากเซิร์ฟเวอร์ได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง',
-          }
+          title: 'เชื่อมต่อข้อมูลไม่สำเร็จ',
+          message: errorMessage || 'ระบบไม่สามารถดึงข้อมูลจากเซิร์ฟเวอร์ได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง',
+        }
         : null;
 
   const selectedProvince = useMemo(
@@ -171,7 +181,7 @@ export default function Home() {
               <AlertTriangle className="text-red-500 shrink-0" size={24} />
               <div>
                 <h3 className="font-bold text-red-100 mb-1">{errorContent.title}</h3>
-                <p className="text-sm text-red-300/80">{errorContent.message}</p>
+                <p className="text-sm text-red-300/80 break-words">{errorContent.message}</p>
               </div>
             </div>
           </div>
