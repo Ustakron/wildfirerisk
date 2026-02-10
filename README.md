@@ -20,6 +20,15 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## FIRMS API Key
+
+This app fetches hotspot data from the NASA FIRMS API. Set `FIRMS_MAP_KEY` in your environment (or a local `.env` file) before running the backend.
+
+Optional overrides:
+- `FIRMS_SOURCE` (default `VIIRS_SNPP_NRT`)
+- `FIRMS_BBOX` (default `97.0,5.5,106.0,20.5` for Thailand)
+- `FIRMS_DAY_RANGE` (default `2`, max `5`)
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
